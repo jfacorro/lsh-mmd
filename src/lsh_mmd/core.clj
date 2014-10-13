@@ -1,6 +1,51 @@
-(ns lsh-mmd.core)
+(ns lsh-mmd.core
+  (:require [clojure.set :as set]))
 
-(defn foo
-  "I don't do a whole lot."
-  [x]
-  (println x "Hello, World!"))
+(defn shingles [n s]
+  (->> s
+    (partition n 1)
+    (map (partial apply str))
+    set))
+
+(defn jacc-sim [s1 s2]
+  (/ (count (set/intersection s1 s2))
+     (count (set/union s1 s2))))
+
+(defn- lcs 
+  "Longest common subsequence"
+  [a b]
+  (let [ca  (count a)
+        cb  (count b)
+        m   (vec (repeat (inc ca) 
+                         (vec (repeat (inc cb) 0))))
+        pos (for [i (range 1 (inc ca)) j (range 1 (inc cb))] [i j])
+        f   (fn [m [i j]]
+              (let [x (nth a (dec i))
+                    y (nth b (dec j))]
+                #_(prn [i j] x y m)
+                (assoc-in m [i j]
+                  (if (= x y )
+                    (inc (get-in m [(dec i) (dec j)]))
+                    (max (get-in m [i (dec j)])
+                         (get-in m [(dec i) j]))))))
+        m (reduce f m pos)]
+    (get-in m [ca cb])))
+
+(defn edit-distance [a b]
+  (Math/abs
+    (- (+ (count a) (count b))
+       (* 2 (lcs a b)))))
+
+(comment
+  (let [words #{"he" "she" "his" "hers"}
+        pairs (for [x words y words] [x y])
+        f     (fn [m [x y]]
+                (update-in m [(edit-distance x y)] conj [x y]))]
+      (clojure.pprint/pprint (reduce f {} pairs)))
+
+  (->> ["ABRACADABRA"
+        "BRICABRAC"]
+    (map (partial shingles 2))
+    (apply jacc-sim))
+
+)
