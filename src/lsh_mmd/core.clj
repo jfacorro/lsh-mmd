@@ -31,16 +31,34 @@
         m (reduce f m pos)]
     (get-in m [ca cb])))
 
-(defn edit-distance [a b]
+(defn edit-dist [a b]
   (Math/abs
     (- (+ (count a) (count b))
        (* 2 (lcs a b)))))
 
+(defn pow [n x]
+  (Math/pow x n))
+
+(defn ln-dist 
+  [n a b]
+  (->> (map - a b)
+    (map (partial pow n))
+    (reduce +)
+    (pow (/ 1 n))
+    Math/abs))
+
+(def l1-dist (partial ln-dist 1))
+(def l2-dist (partial ln-dist 2))
+
+(l1-dist [0 0] [1 1])
+
 (comment
   (let [words #{"he" "she" "his" "hers"}
-        pairs (for [x words y words] [x y])
+        pairs (into #{} (for [x words y words :when (> (hash x) (hash y))] 
+                          [x y]))
+        _   (println pairs)
         f     (fn [m [x y]]
-                (update-in m [(edit-distance x y)] conj [x y]))]
+                (update-in m [(edit-dist x y)] conj [x y]))]
       (clojure.pprint/pprint (reduce f {} pairs)))
 
   (->> ["ABRACADABRA"
