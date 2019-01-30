@@ -52,18 +52,28 @@
 
 (l1-dist [0 0] [1 1])
 
-(comment
+(comment)
+  ;; Question 1
   (let [words #{"he" "she" "his" "hers"}
         pairs (into #{} (for [x words y words :when (> (hash x) (hash y))] 
                           [x y]))
-        _   (println pairs)
+        _     (prn pairs)
         f     (fn [m [x y]]
                 (update-in m [(edit-dist x y)] conj [x y]))]
       (clojure.pprint/pprint (reduce f {} pairs)))
-
+  ;; Question 4
   (->> ["ABRACADABRA"
         "BRICABRAC"]
     (map (partial shingles 2))
     (apply jacc-sim))
+  ;; Question 6
+  (let [p1     [0 0]
+        p2     [100 40]
+        points [[50 18] [53 15] [53 18] [66 5]]
+        f      #(vector %
+                 :l1 (if (< (l1-dist p1 %) (l1-dist p2 %)) :p1 :p2)
+                 :l2 (if (< (l2-dist p1 %) (l2-dist p2 %)) :p1 :p2))]
+    (map f points))
 
-)
+
+
